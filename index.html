@@ -407,6 +407,14 @@
                             </div>
                             
                             <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                                <!-- Filter Tanggal -->
+                                <input type="date" id="filter-date" onchange="renderUserView()" class="p-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" title="Pilih Tanggal Spesifik">
+                                
+                                <!-- Filter Kategori Dinamis -->
+                                <select id="filter-category" onchange="renderUserView()" class="p-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                                    <option value="Semua">Semua Kategori</option>
+                                </select>
+
                                 <select id="filter-type" onchange="renderUserView()" class="p-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                                     <option value="Semua">Semua Arus Kas</option>
                                     <option value="Pemasukan">Hanya Pemasukan</option>
@@ -414,7 +422,7 @@
                                 </select>
                                 <div class="relative">
                                     <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4"></i>
-                                    <input type="text" id="search-term" oninput="renderUserView()" placeholder="Cari uraian/kategori..." class="pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none w-full sm:w-64">
+                                    <input type="text" id="search-term" oninput="renderUserView()" placeholder="Cari uraian..." class="pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none w-full sm:w-40">
                                 </div>
                                 <button id="bulk-delete-txn-btn" onclick="bulkDeleteTxn()" class="hidden flex items-center gap-2 bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
                                     <i data-lucide="trash-2" class="w-4 h-4"></i> Hapus Terpilih
@@ -436,6 +444,13 @@
                                     </tr>
                                 </thead>
                                 <tbody id="txn-tbody"></tbody>
+                                <tfoot id="txn-tfoot" class="hidden bg-slate-200 border-t-2 border-slate-300 font-bold">
+                                    <tr>
+                                        <td colspan="5" class="p-3 text-right text-slate-700">Total Nominal (Berdasarkan Filter):</td>
+                                        <td id="filtered-total-amount" class="p-3 text-right text-slate-800 whitespace-nowrap">Rp0</td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
                             </table>
                         </div>
                     </div>
@@ -927,13 +942,28 @@
             // Hanya ambil data transaksi yang username-nya cocok dengan username yang sedang login
             let userTxns = state.transactions.filter(t => t.username === state.currentUser.username);
 
-            // Filters
+            // Filters Dasar
             const mFilter = document.getElementById('filter-month').value;
-            const tFilter = document.getElementById('filter-type').value;
-            const search = document.getElementById('search-term').value.toLowerCase();
 
             // 1. Month filter base for Summary & Table
             let baseData = mFilter === 'Semua' ? userTxns : userTxns.filter(t => t.date && t.date.startsWith(mFilter));
+
+            // Perbarui Pilihan Dropdown Kategori Berdasarkan Data Bulan Terpilih
+            const catSel = document.getElementById('filter-category');
+            const currentCat = catSel.value;
+            let cats = new Set();
+            baseData.forEach(t => { if(t.category) cats.add(t.category); });
+            let catHtml = '<option value="Semua">Semua Kategori</option>';
+            Array.from(cats).sort().forEach(c => { catHtml += `<option value="${c}">${c}</option>`; });
+            catSel.innerHTML = catHtml;
+            if(Array.from(cats).includes(currentCat)) catSel.value = currentCat;
+            else catSel.value = 'Semua';
+
+            // Ambil Seluruh Value Filter
+            const cFilter = catSel.value;
+            const dFilter = document.getElementById('filter-date').value;
+            const tFilter = document.getElementById('filter-type').value;
+            const search = document.getElementById('search-term').value.toLowerCase();
 
             // Summary Calculation
             let inc=0, exp=0;
@@ -958,6 +988,8 @@
             // 2. Table filters & sort
             let tableData = [...baseData];
             if(tFilter !== 'Semua') tableData = tableData.filter(t => t.type === tFilter);
+            if(cFilter !== 'Semua') tableData = tableData.filter(t => t.category === cFilter);
+            if(dFilter) tableData = tableData.filter(t => t.date === dFilter);
             if(search) tableData = tableData.filter(t => t.description.toLowerCase().includes(search) || t.category.toLowerCase().includes(search));
             
             const {key, direction} = state.sortConfig;
@@ -1000,6 +1032,30 @@
             document.getElementById('txn-tbody').innerHTML = html;
             document.getElementById('select-all-txn').checked = (tableData.length > 0 && state.selectedTxns.length === tableData.length);
             
+            // 3. Menghitung Total Nominal di Table Footer
+            let tMasuk = 0, tKeluar = 0;
+            tableData.forEach(t => {
+                if(t.type === 'Pemasukan') tMasuk += t.amount;
+                else tKeluar += t.amount;
+            });
+            
+            const tfoot = document.getElementById('txn-tfoot');
+            if (tableData.length === 0) {
+                tfoot.classList.add('hidden');
+            } else {
+                tfoot.classList.remove('hidden');
+                let totalText = '';
+                if(tFilter === 'Pemasukan') {
+                    totalText = `<span class="text-emerald-700">${formatIDR(tMasuk)}</span>`;
+                } else if(tFilter === 'Pengeluaran') {
+                    totalText = `<span class="text-red-700">${formatIDR(tKeluar)}</span>`;
+                } else {
+                    totalText = `<span class="text-emerald-600 block text-xs">(Pemasukan) + ${formatIDR(tMasuk)}</span>
+                                 <span class="text-red-600 block text-xs">(Pengeluaran) - ${formatIDR(tKeluar)}</span>`;
+                }
+                document.getElementById('filtered-total-amount').innerHTML = totalText;
+            }
+
             const bulkBtn = document.getElementById('bulk-delete-txn-btn');
             if(state.selectedTxns.length > 0 && !state.isAppLocked) {
                 bulkBtn.classList.remove('hidden');
