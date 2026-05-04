@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BukuKas Pro - HTML Version</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        /* Custom scrollbar untuk tabel */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        /* Safe area untuk mobile nav */
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+        /* Transisi Toggle */
+        .refresh-dot { transition: transform 0.2s ease-in-out; }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 min-h-screen flex flex-col">
+
+    <!-- ==========================================
+         1. LANDING PAGE
+    =========================================== -->
+    <div id="view-landing" class="flex-1 flex flex-col min-h-screen">
+        <header class="bg-slate-900 text-white p-6 flex justify-between items-center">
+            <div class="flex items-center gap-2 text-2xl font-bold">
+                <i data-lucide="trending-up" class="text-blue-400"></i>
+                <span>BukuKas <span class="text-blue-400">Pro</span></span>
+            </div>
+            <div class="flex items-center gap-4 sm:gap-6">
+                <!-- Status Koneksi (Desktop/Tablet) -->
+                <div class="hidden sm:flex items-center gap-2" title="Status Koneksi Database">
+                    <div class="conn-dot-indicator w-2.5 h-2.5 rounded-full bg-slate-400"></div>
+                    <span class="conn-text-indicator text-sm text-slate-300 font-medium">Offline</span>
+                </div>
+                <button onclick="switchView('login')" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                    Masuk ke Sistem
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-1 flex flex-col items-center justify-center p-8 text-center bg-gradient-to-b from-slate-900 to-slate-800 text-white">
+            <h1 class="text-5xl font-extrabold mb-6 max-w-4xl leading-tight">
+                Sistem Pencatatan Keuangan Harian untuk <span class="text-blue-400">Analis Akuntan Profesional</span>
+            </h1>
+            <p class="text-xl text-slate-300 mb-12 max-w-2xl">
+                Kelola arus kas, pantau pengeluaran terperinci, dan hasilkan wawasan finansial secara instan. Dirancang untuk presisi dan akurasi tinggi.
+            </p>
+
+            <div class="grid md:grid-cols-3 gap-8 max-w-6xl w-full">
+                <div class="bg-slate-800/50 p-8 rounded-2xl border border-slate-700 hover:border-slate-500 transition-colors">
+                    <div class="mb-4 flex justify-center text-blue-400"><i data-lucide="bar-chart-3" class="w-10 h-10"></i></div>
+                    <h3 class="text-xl font-bold mb-2">Analisis Rinci</h3>
+                    <p class="text-slate-400">Visualisasi data dalam bentuk grafik donat dan tabel yang dapat difilter secara mendalam.</p>
+                </div>
+                <div class="bg-slate-800/50 p-8 rounded-2xl border border-slate-700 hover:border-slate-500 transition-colors">
+                    <div class="mb-4 flex justify-center text-emerald-400"><i data-lucide="shield-check" class="w-10 h-10"></i></div>
+                    <h3 class="text-xl font-bold mb-2">Kontrol Admin</h3>
+                    <p class="text-slate-400">Fitur penguncian aplikasi (Cut-off) dan manajemen pengguna tingkat lanjut.</p>
+                </div>
+                <div class="bg-slate-800/50 p-8 rounded-2xl border border-slate-700 hover:border-slate-500 transition-colors">
+                    <div class="mb-4 flex justify-center text-purple-400"><i data-lucide="check-square" class="w-10 h-10"></i></div>
+                    <h3 class="text-xl font-bold mb-2">Manajemen Massal</h3>
+                    <p class="text-slate-400">Kelola ribuan baris data dengan mudah menggunakan fitur bulk-checklist, sortir, dan filter.</p>
+                </div>
+            </div>
+        </main>
+        <footer class="bg-slate-950 text-slate-400 py-6 text-center">
+            &copy; 2026 BukuKas Pro - Solusi Akuntansi Modern (HTML Murni)
+        </footer>
+    </div>
+
+    <!-- ==========================================
+         2. LOGIN PAGE
+    =========================================== -->
+    <div id="view-login" class="hidden min-h-screen flex items-center justify-center bg-slate-100 p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 relative">
+            <button onclick="switchView('landing')" class="absolute top-4 left-4 text-slate-400 hover:text-slate-600">
+                <i data-lucide="x"></i>
+            </button>
+            <div class="flex justify-center mb-6">
+                <div class="bg-blue-100 p-3 rounded-full text-blue-600"><i data-lucide="lock" class="w-8 h-8"></i></div>
+            </div>
+            <h2 class="text-2xl font-bold text-center mb-8 text-slate-800">Otentikasi Sistem</h2>
+            
+            <form onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Username</label>
+                    <input type="text" id="login-username" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="admin / user" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Password</label>
+                    <div class="relative">
+                        <input type="password" id="login-password" class="w-full p-3 pr-10 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Masukan password" required>
+                        <button type="button" onclick="toggleLoginPassword()" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600">
+                            <i id="login-eye-icon" data-lucide="eye" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Peran (Role)</label>
+                    <select id="login-role" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        <option value="user">User (Staf)</option>
+                        <option value="admin">Admin (Manajer)</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-colors">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         3. DASHBOARD LAYOUT
+    =========================================== -->
+    <div id="view-dashboard" class="hidden flex flex-col md:flex-row h-screen bg-slate-100 overflow-hidden relative w-full">
+        
+        <!-- Mobile Top Header -->
+        <header class="md:hidden bg-slate-900 text-white p-3 flex justify-between items-center z-20 shadow-md w-full">
+            <div class="font-bold flex items-center gap-2 text-lg">
+                <i data-lucide="trending-up" class="text-blue-400 w-5 h-5"></i> BukuKas
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-1.5" title="Status Koneksi Database">
+                    <div class="conn-dot-indicator w-2 h-2 rounded-full bg-slate-400"></div>
+                </div>
+                <!-- Refresh Toggle Mobile -->
+                <label class="flex items-center cursor-pointer">
+                    <div class="relative">
+                        <input type="checkbox" class="auto-refresh-checkbox sr-only" onchange="toggleAutoRefresh(this)">
+                        <div class="refresh-bg block bg-slate-600 w-8 h-4 rounded-full transition-colors"></div>
+                        <div class="refresh-dot absolute left-0.5 top-0.5 bg-white w-3 h-3 rounded-full shadow-sm"></div>
+                    </div>
+                </label>
+            </div>
+        </header>
+
+        <!-- Desktop Sidebar -->
+        <aside class="hidden md:flex w-64 bg-slate-900 text-slate-300 flex-col z-20 shadow-xl">
+            <div class="p-6 flex items-center gap-2 text-white text-xl font-bold border-b border-slate-800">
+                <i data-lucide="trending-up" class="text-blue-500"></i>
+                <span>BukuKas Pro</span>
+            </div>
+            <div class="flex-1 py-6">
+                <nav class="space-y-1 px-3">
+                    <div class="flex items-center gap-3 px-4 py-3 bg-blue-600/20 text-blue-400 rounded-lg font-medium" id="sidebar-nav-title">
+                        <!-- Icon & Title injected via JS -->
+                    </div>
+                </nav>
+            </div>
+            <div class="p-4 border-t border-slate-800 space-y-4">
+                <!-- Status & Auto Refresh Desktop -->
+                <div class="bg-slate-800/50 rounded-lg p-3 space-y-3 border border-slate-700/50">
+                    <div class="flex items-center gap-2">
+                        <div class="conn-dot-indicator w-2.5 h-2.5 rounded-full bg-slate-400"></div>
+                        <span class="conn-text-indicator text-xs text-slate-300 font-medium">Offline</span>
+                    </div>
+                    <label class="flex items-center cursor-pointer justify-between">
+                        <span class="text-xs text-slate-400">Auto Refresh (5s)</span>
+                        <div class="relative">
+                            <input type="checkbox" class="auto-refresh-checkbox sr-only" onchange="toggleAutoRefresh(this)">
+                            <div class="refresh-bg block bg-slate-600 w-8 h-4 rounded-full transition-colors"></div>
+                            <div class="refresh-dot absolute left-0.5 top-0.5 bg-white w-3 h-3 rounded-full shadow-sm"></div>
+                        </div>
+                    </label>
+                </div>
+                <!-- User Profile -->
+                <div class="flex items-center gap-3 mb-2 px-2">
+                    <div id="sidebar-avatar" class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-white font-bold uppercase">A</div>
+                    <div>
+                        <p id="sidebar-name" class="text-sm font-medium text-white truncate max-w-[120px]">Nama</p>
+                        <p id="sidebar-role" class="text-xs text-slate-500 capitalize">Role</p>
+                    </div>
+                </div>
+                <button onclick="handleLogout()" class="w-full flex items-center gap-2 justify-center px-4 py-2 bg-slate-800 hover:bg-slate-700 text-red-400 rounded-lg transition-colors">
+                    <i data-lucide="log-out" class="w-4 h-4"></i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Mobile Bottom Nav -->
+        <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 text-slate-300 flex justify-around items-center p-3 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] pb-safe">
+            <div class="flex flex-col items-center text-blue-400">
+                <i id="mob-nav-icon" data-lucide="layout-dashboard" class="w-6 h-6"></i>
+                <span id="mob-nav-title" class="text-[10px] mt-1 font-medium">Dashboard</span>
+            </div>
+            <div class="flex flex-col items-center">
+                <div id="mob-nav-avatar" class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-white text-sm font-bold mb-1 border-2 border-slate-600 uppercase">A</div>
+                <span id="mob-nav-name" class="text-[10px] truncate max-w-[70px]">Nama</span>
+            </div>
+            <button onclick="handleLogout()" class="flex flex-col items-center text-red-400 hover:text-red-300 transition-colors">
+                <i data-lucide="log-out" class="w-6 h-6"></i>
+                <span class="text-[10px] mt-1">Logout</span>
+            </button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto pb-24 md:pb-0 relative z-10 w-full">
+            <div class="p-4 md:p-8 w-full">
+                
+                <!-- GLOBAL LOADER -->
+                <div id="global-loader" class="hidden bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 rounded shadow-sm mb-4 flex items-center gap-3">
+                    <i data-lucide="loader-2" class="animate-spin"></i>
+                    <div>
+                        <h4 class="font-bold">Sinkronisasi Database...</h4>
+                        <p class="text-sm">Sedang menghubungkan ke Google Sheets.</p>
+                    </div>
+                </div>
+
+                <!-- ADMIN VIEW -->
+                <div id="admin-view" class="hidden max-w-5xl mx-auto space-y-6">
+                    <h2 class="text-3xl font-bold text-slate-800">Pengaturan Sistem (Admin)</h2>
+                    
+                    <!-- GAS Integration -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                        <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2 mb-4">
+                            <i data-lucide="database" class="text-emerald-500"></i>
+                            Integrasi Database Google Sheets
+                        </h3>
+                        <p class="text-sm text-slate-500 mb-4">Masukkan URL Web App dari Google Apps Script untuk menyimpan data.</p>
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <input type="text" id="gas-url-input" placeholder="https://script.google.com/macros/s/.../exec" class="flex-1 p-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500">
+                            <button onclick="saveGasUrl()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-6 rounded-lg transition-colors">Simpan URL</button>
+                        </div>
+                        <p id="gas-status" class="hidden text-xs text-emerald-600 mt-2 font-medium">✓ Aplikasi terhubung dengan Cloud Sheets.</p>
+                    </div>
+
+                    <!-- Lock App -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                                <i id="lock-icon" data-lucide="unlock" class="text-emerald-500"></i>
+                                Status Kunci Aplikasi (Cut-Off)
+                            </h3>
+                            <p class="text-slate-500 mt-1">Jika dikunci, User tidak dapat memodifikasi data.</p>
+                        </div>
+                        <button id="lock-btn" onclick="toggleAppLock()" class="bg-emerald-500 hover:bg-emerald-600 px-6 py-3 rounded-lg font-bold text-white transition-colors">
+                            Kunci Aplikasi Sekarang
+                        </button>
+                    </div>
+
+                    <!-- Manage Users Form -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                        <h3 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2 flex items-center gap-2">
+                            <i id="user-form-icon" data-lucide="plus"></i> <span id="user-form-title">Tambah Pengguna Baru</span>
+                        </h3>
+                        <form onsubmit="handleUserSubmit(event)" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                            <input type="hidden" id="user-id">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Nama Lengkap</label>
+                                <input type="text" id="user-name" required placeholder="Nama Lengkap" class="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Username</label>
+                                <input type="text" id="user-username" required placeholder="Username" class="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Password</label>
+                                <input type="text" id="user-password" required placeholder="Password" class="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Peran (Role)</label>
+                                <select id="user-role" class="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 outline-none">
+                                    <option value="user">User (Staf)</option>
+                                    <option value="admin">Admin (Manajer)</option>
+                                </select>
+                            </div>
+                            <div class="flex items-end gap-2">
+                                <button type="submit" id="user-submit-btn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors">Tambah</button>
+                                <button type="button" id="user-cancel-btn" onclick="cancelEditUser()" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded transition-colors" title="Batal"><i data-lucide="x"></i></button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Manage Users Table -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                            <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2"><i data-lucide="users" class="text-blue-500"></i> Daftar Pengguna</h3>
+                            <button id="bulk-delete-users-btn" onclick="bulkDeleteUsers()" class="hidden flex items-center gap-2 bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i> Hapus Terpilih
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm border-collapse">
+                                <thead class="bg-slate-100 border-b border-slate-200 text-slate-600 font-medium">
+                                    <tr>
+                                        <th class="p-3 w-10 text-center"><input type="checkbox" id="select-all-users" onchange="toggleSelectAllUsers(this)" class="w-4 h-4"></th>
+                                        <th class="p-3">ID</th><th class="p-3">Nama Lengkap</th><th class="p-3">Username</th><th class="p-3">Password</th><th class="p-3">Role</th><th class="p-3 text-center w-24">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="users-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- USER VIEW -->
+                <div id="user-view" class="hidden max-w-7xl mx-auto space-y-6">
+                    
+                    <!-- App Locked Warning -->
+                    <div id="locked-warning" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-sm mb-4 flex items-center gap-3">
+                        <i data-lucide="lock"></i>
+                        <div><h4 class="font-bold">Aplikasi Terkunci</h4><p>Admin telah mengunci sistem untuk periode ini (Cut-off).</p></div>
+                    </div>
+
+                    <!-- Summary Widgets -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+                            <div class="p-4 bg-emerald-100 text-emerald-600 rounded-full"><i data-lucide="trending-up" class="w-7 h-7"></i></div>
+                            <div><p class="text-sm font-medium text-slate-500">Total Pemasukan</p><h3 id="sum-income" class="text-2xl font-bold text-slate-800">Rp0</h3></div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+                            <div class="p-4 bg-red-100 text-red-600 rounded-full"><i data-lucide="trending-down" class="w-7 h-7"></i></div>
+                            <div><p class="text-sm font-medium text-slate-500">Total Pengeluaran</p><h3 id="sum-expense" class="text-2xl font-bold text-slate-800">Rp0</h3></div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+                            <div class="p-4 bg-blue-100 text-blue-600 rounded-full"><i data-lucide="bar-chart-3" class="w-7 h-7"></i></div>
+                            <div><p class="text-sm font-medium text-slate-500">Saldo Kas</p><h3 id="sum-balance" class="text-2xl font-bold text-slate-800">Rp0</h3></div>
+                        </div>
+                    </div>
+
+                    <!-- Form Input -->
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                        <h3 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2 flex items-center gap-2">
+                            <i id="txn-form-icon" data-lucide="plus"></i> <span id="txn-form-title">Input Jurnal Transaksi</span>
+                        </h3>
+                        <form onsubmit="handleTxnSubmit(event)" class="space-y-4">
+                            <input type="hidden" id="txn-id">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Tanggal</label>
+                                <input type="date" id="txn-date" required class="txn-input w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 disabled:bg-slate-100">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Tipe Arus Kas</label>
+                                <select id="txn-type" class="txn-input w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 disabled:bg-slate-100">
+                                    <option value="Pemasukan">Pemasukan (Kredit)</option>
+                                    <option value="Pengeluaran">Pengeluaran (Debit)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Kategori Akun</label>
+                                <input type="text" id="txn-category" required placeholder="Contoh: Operasional, Gaji..." class="txn-input w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 disabled:bg-slate-100">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Nominal (Rp)</label>
+                                <input type="number" id="txn-amount" required placeholder="0" class="txn-input w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 disabled:bg-slate-100">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Keterangan / Uraian</label>
+                                <textarea id="txn-desc" rows="3" placeholder="Deskripsi rinci..." class="txn-input w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 disabled:bg-slate-100"></textarea>
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="submit" id="txn-submit-btn" class="txn-input flex-1 flex justify-center items-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:bg-slate-400 transition-colors">Rekam Data</button>
+                                <button type="button" id="txn-cancel-btn" onclick="cancelEditTxn()" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded transition-colors">Batal</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Chart -->
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+                        <h3 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Distribusi Pengeluaran</h3>
+                        <div class="w-full h-[350px] relative">
+                            <canvas id="expenseChart"></canvas>
+                            <div id="chart-empty" class="hidden absolute inset-0 flex items-center justify-center text-slate-400">Belum ada data pengeluaran.</div>
+                        </div>
+                    </div>
+
+                    <!-- Table Data -->
+                    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-50">
+                            <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
+                                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">Buku Besar Kas</h3>
+                                <button onclick="downloadPDF()" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors" title="Cetak/Unduh sebagai PDF">
+                                    <i data-lucide="download" class="w-4 h-4"></i> <span class="hidden sm:inline">Unduh Laporan</span>
+                                </button>
+                            </div>
+                            
+                            <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                                <select id="filter-month" onchange="renderUserView()" class="p-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                                    <option value="Semua">Semua Bulan</option>
+                                    <!-- Options injected via JS -->
+                                </select>
+                                <select id="filter-type" onchange="renderUserView()" class="p-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                                    <option value="Semua">Semua Arus Kas</option>
+                                    <option value="Pemasukan">Hanya Pemasukan</option>
+                                    <option value="Pengeluaran">Hanya Pengeluaran</option>
+                                </select>
+                                <div class="relative">
+                                    <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4"></i>
+                                    <input type="text" id="search-term" oninput="renderUserView()" placeholder="Cari uraian/kategori..." class="pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none w-full sm:w-64">
+                                </div>
+                                <button id="bulk-delete-txn-btn" onclick="bulkDeleteTxn()" class="hidden flex items-center gap-2 bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i> Hapus Terpilih
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm">
+                                <thead class="bg-slate-100 border-b border-slate-200 text-slate-600 font-medium">
+                                    <tr>
+                                        <th class="p-3 w-10 text-center"><input type="checkbox" id="select-all-txn" onchange="toggleSelectAllTxn(this)" class="w-4 h-4 txn-input"></th>
+                                        <th class="p-3 cursor-pointer hover:bg-slate-200" onclick="handleSort('date')"><div class="flex items-center gap-1">Tanggal <i data-lucide="arrow-up-down" class="w-3 h-3 text-slate-400"></i></div></th>
+                                        <th class="p-3 cursor-pointer hover:bg-slate-200" onclick="handleSort('type')"><div class="flex items-center gap-1">Tipe <i data-lucide="arrow-up-down" class="w-3 h-3 text-slate-400"></i></div></th>
+                                        <th class="p-3 cursor-pointer hover:bg-slate-200" onclick="handleSort('category')"><div class="flex items-center gap-1">Kategori <i data-lucide="arrow-up-down" class="w-3 h-3 text-slate-400"></i></div></th>
+                                        <th class="p-3 cursor-pointer hover:bg-slate-200" onclick="handleSort('description')"><div class="flex items-center gap-1">Uraian <i data-lucide="arrow-up-down" class="w-3 h-3 text-slate-400"></i></div></th>
+                                        <th class="p-3 cursor-pointer hover:bg-slate-200 text-right" onclick="handleSort('amount')"><div class="flex items-center gap-1 justify-end">Nominal <i data-lucide="arrow-up-down" class="w-3 h-3 text-slate-400"></i></div></th>
+                                        <th class="p-3 text-center w-24">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="txn-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div> <!-- End User View -->
+            </div>
+        </main>
+    </div>
+
+    <!-- ==========================================
+         JAVASCRIPT LOGIC
+    =========================================== -->
+    <script>
+        // --- DATA & STATE ---
+        let initialTransactions = [
+            { id: 1, date: '2026-05-01', type: 'Pemasukan', category: 'Pendapatan Jasa', amount: 15000000, description: 'Audit PT. ABC' },
+            { id: 2, date: '2026-05-02', type: 'Pengeluaran', category: 'Operasional', amount: 2500000, description: 'Lisensi Software Akuntansi' },
+            { id: 3, date: '2026-05-03', type: 'Pengeluaran', category: 'Transportasi', amount: 500000, description: 'Kunjungan Klien' },
+            { id: 4, date: '2026-05-04', type: 'Pemasukan', category: 'Konsultasi', amount: 5000000, description: 'Konsultasi Pajak Bpk. Budi' },
+        ];
+        let initialUsers = [
+            { id: 1, username: 'admin', password: '123', role: 'admin', name: 'Admin Utama' },
+            { id: 2, username: 'user', password: '123', role: 'user', name: 'Staf Akuntan 1' },
+        ];
+
+        let state = {
+            view: 'landing', // landing, login, dashboard
+            currentUser: null,
+            transactions: [...initialTransactions],
+            users: [...initialUsers],
+            isAppLocked: false,
+            gasUrl: localStorage.getItem('buku_kas_gas_url') || 'https://script.google.com/macros/s/AKfycbyPG2aUHIPp629Uclv5vdCc7oe2fg_hb7nTXYwYjtFzo90gfvgigYq2-W5hJcWcPSdH8Q/exec',
+            isLoading: false,
+            connStatus: 'offline', // checking, connected, error, offline
+            autoRefresh: false,
+            refreshInterval: null,
+            // Admin Table State
+            selectedUsers: [],
+            // User Table State
+            sortConfig: { key: 'date', direction: 'desc' },
+            selectedTxns: [],
+            filteredDataCache: [] // for PDF printing
+        };
+
+        let chartInstance = null;
+        const formatIDR = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
+
+        // --- INIT ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            lucide.createIcons();
+            // Fetch awal saat aplikasi pertama dibuka
+            if(state.gasUrl) {
+                setConnectionStatus('checking');
+                try {
+                    let [resUsers, resTxn] = await Promise.all([
+                        fetchGAS('read', 'users', null, true),
+                        fetchGAS('read', 'transactions', null, true)
+                    ]);
+                    
+                    if(resUsers && Array.isArray(resUsers) && !resUsers.error) state.users = resUsers.map(u => ({...u, id: Number(u.id)}));
+                    if(resTxn && Array.isArray(resTxn) && !resTxn.error) state.transactions = resTxn.map(d => ({...d, amount: Number(d.amount), id: Number(d.id)}));
+                    
+                    if((resUsers && resUsers.error) || (resTxn && resTxn.error)) throw new Error("Terjadi kesalahan fetch");
+                    setConnectionStatus('connected');
+                } catch(e) {
+                    setConnectionStatus('error');
+                }
+            } else {
+                setConnectionStatus('offline');
+            }
+            applyView();
+        });
+
+        // --- NAVIGATION LOGIC ---
+        function switchView(viewName) {
+            state.view = viewName;
+            applyView();
+        }
+
+        function applyView() {
+            document.getElementById('view-landing').classList.add('hidden');
+            document.getElementById('view-login').classList.add('hidden');
+            document.getElementById('view-dashboard').classList.add('hidden');
+            
+            if(state.view === 'landing') document.getElementById('view-landing').classList.remove('hidden');
+            else if(state.view === 'login') document.getElementById('view-login').classList.remove('hidden');
+            else if(state.view === 'dashboard') {
+                document.getElementById('view-dashboard').classList.remove('hidden');
+                setupDashboard();
+            }
+            lucide.createIcons();
+        }
+
+        // --- AUTH ---
+        function toggleLoginPassword() {
+            const input = document.getElementById('login-password');
+            const icon = document.getElementById('login-eye-icon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.setAttribute('data-lucide', 'eye-off');
+            } else {
+                input.type = 'password';
+                icon.setAttribute('data-lucide', 'eye');
+            }
+            lucide.createIcons();
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('login-username').value;
+            const p = document.getElementById('login-password').value;
+            const r = document.getElementById('login-role').value;
+            
+            const user = state.users.find(x => x.username === u && x.password === p && x.role === r);
+            if(user) {
+                state.currentUser = user;
+                document.getElementById('login-username').value = '';
+                document.getElementById('login-password').value = '';
+                switchView('dashboard');
+            } else {
+                alert('Kredensial tidak valid! Periksa username, password, dan peran (role).');
+            }
+        }
+        
+        function handleLogout() {
+            state.currentUser = null;
+            if(state.autoRefresh) { // Matikan auto-refresh demi keamanan saat logout
+                document.querySelectorAll('.auto-refresh-checkbox').forEach(cb => { cb.checked = false; toggleAutoRefresh(cb); });
+            }
+            switchView('landing');
+        }
+
+        // --- GOOGLE SHEETS API UTILS & AUTO REFRESH ---
+        function setConnectionStatus(status) {
+            state.connStatus = status;
+            const dots = document.querySelectorAll('.conn-dot-indicator');
+            const texts = document.querySelectorAll('.conn-text-indicator');
+
+            let colorClass = 'bg-slate-400';
+            let text = 'Offline';
+            let pulse = false;
+
+            if(status === 'checking') { colorClass = 'bg-yellow-400'; text = 'Menghubungkan...'; pulse = true; }
+            else if(status === 'connected') { colorClass = 'bg-emerald-500'; text = 'Terhubung'; pulse = false; }
+            else if(status === 'error') { colorClass = 'bg-red-500'; text = 'Gagal Konek'; pulse = false; }
+
+            dots.forEach(d => {
+                d.classList.remove('bg-slate-400', 'bg-yellow-400', 'bg-emerald-500', 'bg-red-500', 'animate-pulse');
+                d.classList.add(colorClass);
+                if(pulse) d.classList.add('animate-pulse');
+            });
+            texts.forEach(t => t.innerText = text);
+        }
+
+        function toggleAutoRefresh(element) {
+            const isChecked = element.checked;
+            state.autoRefresh = isChecked;
+
+            // Sinkronisasi status toggle di desktop & mobile
+            document.querySelectorAll('.auto-refresh-checkbox').forEach(cb => {
+                cb.checked = isChecked;
+                const dot = cb.parentElement.querySelector('.refresh-dot');
+                const bg = cb.parentElement.querySelector('.refresh-bg');
+                if(isChecked) {
+                    dot.style.transform = 'translateX(16px)';
+                    bg.classList.remove('bg-slate-600'); bg.classList.add('bg-blue-500');
+                } else {
+                    dot.style.transform = 'translateX(0)';
+                    bg.classList.remove('bg-blue-500'); bg.classList.add('bg-slate-600');
+                }
+            });
+
+            if(isChecked) {
+                state.refreshInterval = setInterval(performBackgroundFetch, 5000);
+            } else {
+                clearInterval(state.refreshInterval);
+            }
+        }
+
+        async function performBackgroundFetch() {
+            if (!state.gasUrl || state.connStatus === 'checking') return;
+            
+            // Tahan refresh jika admin/user sedang aktif mengisi/mengubah data di form
+            const isEditingTxn = document.getElementById('txn-id') && document.getElementById('txn-id').value !== '';
+            const isEditingUser = document.getElementById('user-id') && document.getElementById('user-id').value !== '';
+            if (isEditingTxn || isEditingUser) return;
+
+            try {
+                let [resUsers, resTxn] = await Promise.all([
+                    fetchGAS('read', 'users', null, true),
+                    fetchGAS('read', 'transactions', null, true)
+                ]);
+
+                if(resUsers && Array.isArray(resUsers) && !resUsers.error) state.users = resUsers.map(u => ({...u, id: Number(u.id)}));
+                if(resTxn && Array.isArray(resTxn) && !resTxn.error) state.transactions = resTxn.map(d => ({...d, amount: Number(d.amount), id: Number(d.id)}));
+
+                // Render ulang secara senyap tanpa mereset filter yang dipilih pengguna
+                if (state.view === 'dashboard') {
+                    if (state.currentUser && state.currentUser.role === 'admin') renderUsersTable();
+                    else if (state.currentUser && state.currentUser.role === 'user') {
+                        updateMonthDropdown();
+                        renderUserView();
+                    }
+                }
+            } catch(e) {
+                console.error("Auto-refresh error:", e);
+            }
+        }
+
+        async function fetchGAS(action, target = 'transactions', dataObj = null, silent = false) {
+            if(!state.gasUrl) return { success: false, local: true };
+            
+            if(!silent) document.getElementById('global-loader').classList.remove('hidden');
+            setConnectionStatus('checking');
+
+            try {
+                let res = await fetch(state.gasUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify({ action: action, target: target, data: dataObj })
+                });
+                let json = await res.json();
+                if(!silent) document.getElementById('global-loader').classList.add('hidden');
+                setConnectionStatus('connected');
+                return json;
+            } catch(e) {
+                if(!silent) document.getElementById('global-loader').classList.add('hidden');
+                setConnectionStatus('error');
+                if(!silent) alert("Koneksi Google Sheets Gagal.");
+                return { success: false, error: e };
+            }
+        }
+
+        // --- DASHBOARD SETUP ---
+        function setupDashboard() {
+            const u = state.currentUser;
+            const isAdm = u.role === 'admin';
+            
+            // Setup Nav UI
+            document.getElementById('sidebar-nav-title').innerHTML = `<i data-lucide="${isAdm?'settings':'layout-dashboard'}"></i> ${isAdm?'Panel Admin':'Dashboard Akuntan'}`;
+            document.getElementById('sidebar-avatar').innerText = u.name.charAt(0);
+            document.getElementById('sidebar-name').innerText = u.name;
+            document.getElementById('sidebar-role').innerText = u.role;
+            
+            document.getElementById('mob-nav-icon').setAttribute('data-lucide', isAdm?'settings':'layout-dashboard');
+            document.getElementById('mob-nav-title').innerText = isAdm?'Admin':'Dashboard';
+            document.getElementById('mob-nav-avatar').innerText = u.name.charAt(0);
+            document.getElementById('mob-nav-name').innerText = u.name;
+
+            document.getElementById('admin-view').classList.add('hidden');
+            document.getElementById('user-view').classList.add('hidden');
+
+            if(isAdm) {
+                document.getElementById('admin-view').classList.remove('hidden');
+                renderAdminView();
+            } else {
+                document.getElementById('user-view').classList.remove('hidden');
+                updateMonthDropdown();
+                renderUserView();
+            }
+            lucide.createIcons();
+        }
+
+        // ==========================================
+        // ADMIN LOGIC
+        // ==========================================
+        function renderAdminView() {
+            document.getElementById('gas-url-input').value = state.gasUrl;
+            if(state.gasUrl) document.getElementById('gas-status').classList.remove('hidden');
+            else document.getElementById('gas-status').classList.add('hidden');
+
+            renderLockStatus();
+            renderUsersTable();
+        }
+
+        function saveGasUrl() {
+            const val = document.getElementById('gas-url-input').value;
+            state.gasUrl = val;
+            localStorage.setItem('buku_kas_gas_url', val);
+            alert('URL Google Sheets tersimpan!');
+            // Tarik ulang data pengguna setiap kali URL disimpan
+            fetchGAS('read', 'users').then(res => {
+                if(res && Array.isArray(res) && res.length > 0) {
+                    state.users = res.map(u => ({...u, id: Number(u.id)}));
+                    renderUsersTable();
+                }
+            });
+            renderAdminView();
+        }
+
+        function toggleAppLock() {
+            state.isAppLocked = !state.isAppLocked;
+            renderLockStatus();
+        }
+
+        function renderLockStatus() {
+            const btn = document.getElementById('lock-btn');
+            const icon = document.getElementById('lock-icon');
+            if(state.isAppLocked) {
+                btn.className = "px-6 py-3 rounded-lg font-bold text-white transition-colors bg-red-500 hover:bg-red-600";
+                btn.innerText = "Buka Kunci Aplikasi";
+                icon.setAttribute('data-lucide', 'lock');
+                icon.className = "text-red-500";
+            } else {
+                btn.className = "px-6 py-3 rounded-lg font-bold text-white transition-colors bg-emerald-500 hover:bg-emerald-600";
+                btn.innerText = "Kunci Aplikasi Sekarang";
+                icon.setAttribute('data-lucide', 'unlock');
+                icon.className = "text-emerald-500";
+            }
+            lucide.createIcons();
+        }
+
+        // User Management
+        function renderUsersTable() {
+            let html = '';
+            if(state.users.length === 0) {
+                html = `<tr><td colspan="7" class="p-8 text-center text-slate-400">Belum ada pengguna.</td></tr>`;
+            } else {
+                state.users.forEach(u => {
+                    const isSelected = state.selectedUsers.includes(u.id);
+                    const roleClass = u.role==='admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700';
+                    html += `
+                    <tr class="border-b border-slate-100 hover:bg-slate-50 ${isSelected?'bg-blue-50':''}">
+                        <td class="p-3 text-center"><input type="checkbox" ${isSelected?'checked':''} onchange="toggleUserRow(${u.id})" class="w-4 h-4 rounded"></td>
+                        <td class="p-3 text-slate-600">${u.id}</td>
+                        <td class="p-3 font-medium text-slate-700">${u.name}</td>
+                        <td class="p-3 text-slate-600">${u.username}</td>
+                        <td class="p-3 text-slate-600">${u.password}</td>
+                        <td class="p-3"><span class="px-2 py-1 rounded text-xs font-bold uppercase ${roleClass}">${u.role}</span></td>
+                        <td class="p-3 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <button onclick="editUser(${u.id})" class="p-1.5 text-blue-600 hover:bg-blue-100 rounded"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                                <button onclick="deleteUser(${u.id})" class="p-1.5 text-red-600 hover:bg-red-100 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            </div>
+                        </td>
+                    </tr>`;
+                });
+            }
+            document.getElementById('users-tbody').innerHTML = html;
+            document.getElementById('select-all-users').checked = (state.users.length > 0 && state.selectedUsers.length === state.users.length);
+            
+            const bulkBtn = document.getElementById('bulk-delete-users-btn');
+            if(state.selectedUsers.length > 0) {
+                bulkBtn.classList.remove('hidden');
+                bulkBtn.innerHTML = `<i data-lucide="trash-2" class="w-4 h-4"></i> Hapus ${state.selectedUsers.length} Terpilih`;
+            } else {
+                bulkBtn.classList.add('hidden');
+            }
+            lucide.createIcons();
+        }
+
+        async function handleUserSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('user-id').value;
+            const name = document.getElementById('user-name').value;
+            const username = document.getElementById('user-username').value;
+            const password = document.getElementById('user-password').value;
+            const role = document.getElementById('user-role').value;
+
+            if(state.users.some(u => u.username === username && u.id != id)) {
+                alert('Username sudah digunakan!'); return;
+            }
+
+            const payload = { name, username, password, role };
+            const isEditing = !!id;
+            if(isEditing) payload.id = Number(id);
+
+            let res = await fetchGAS(isEditing ? 'update' : 'create', 'users', payload);
+            if(!res.success && !res.local) return alert("Gagal simpan ke Cloud: " + (res.message || res.error));
+
+            if(!isEditing) payload.id = res.id || (state.users.length ? Math.max(...state.users.map(x=>x.id)) + 1 : 1);
+
+            if(isEditing) { // Update
+                let u = state.users.find(x => x.id == id);
+                u.name = name; u.username = username; u.password = password; u.role = role;
+            } else { // Create
+                state.users.push(payload);
+            }
+            cancelEditUser();
+            renderUsersTable();
+        }
+
+        function editUser(id) {
+            const u = state.users.find(x => x.id == id);
+            document.getElementById('user-id').value = u.id;
+            document.getElementById('user-name').value = u.name;
+            document.getElementById('user-username').value = u.username;
+            document.getElementById('user-password').value = u.password;
+            document.getElementById('user-role').value = u.role;
+            
+            document.getElementById('user-form-title').innerText = "Edit Pengguna";
+            document.getElementById('user-submit-btn').innerText = "Simpan";
+            document.getElementById('user-cancel-btn').classList.remove('hidden');
+            document.getElementById('user-form-icon').setAttribute('data-lucide', 'edit');
+            lucide.createIcons();
+            window.scrollTo({top:0, behavior:'smooth'});
+        }
+
+        function cancelEditUser() {
+            document.getElementById('user-id').value = '';
+            document.getElementById('user-name').value = '';
+            document.getElementById('user-username').value = '';
+            document.getElementById('user-password').value = '';
+            document.getElementById('user-role').value = 'user';
+            
+            document.getElementById('user-form-title').innerText = "Tambah Pengguna Baru";
+            document.getElementById('user-submit-btn').innerText = "Tambah";
+            document.getElementById('user-cancel-btn').classList.add('hidden');
+            document.getElementById('user-form-icon').setAttribute('data-lucide', 'plus');
+            lucide.createIcons();
+        }
+
+        async function deleteUser(id) {
+            if(state.users.length === 1) return alert('Sistem harus memiliki minimal 1 pengguna!');
+            if(!confirm('Yakin hapus?')) return;
+            
+            let res = await fetchGAS('delete', 'users', {id: id});
+            if(!res.success && !res.local) return alert("Gagal menghapus dari Cloud.");
+
+            state.users = state.users.filter(x => x.id != id);
+            state.selectedUsers = state.selectedUsers.filter(x => x != id);
+            renderUsersTable();
+        }
+
+        function toggleSelectAllUsers(cb) {
+            state.selectedUsers = cb.checked ? state.users.map(x=>x.id) : [];
+            renderUsersTable();
+        }
+        function toggleUserRow(id) {
+            if(state.selectedUsers.includes(id)) state.selectedUsers = state.selectedUsers.filter(x=>x!=id);
+            else state.selectedUsers.push(id);
+            renderUsersTable();
+        }
+
+        async function bulkDeleteUsers() {
+            if(state.users.length - state.selectedUsers.length < 1) return alert('Minimal harus ada 1 pengguna tersisa!');
+            if(!confirm(`Hapus ${state.selectedUsers.length} terpilih?`)) return;
+            
+            let res = await fetchGAS('bulk_delete', 'users', {ids: state.selectedUsers});
+            if(!res.success && !res.local) return alert("Gagal massal dari Cloud.");
+
+            state.users = state.users.filter(x => !state.selectedUsers.includes(x.id));
+            state.selectedUsers = [];
+            renderUsersTable();
+        }
+
+        // ==========================================
+        // USER LOGIC
+        // ==========================================
+        function updateMonthDropdown() {
+            const sel = document.getElementById('filter-month');
+            const currentVal = sel.value;
+            let months = new Set();
+            state.transactions.forEach(t => { if(t.date) months.add(t.date.substring(0,7)); });
+            let sorted = Array.from(months).sort().reverse();
+            
+            const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            
+            let html = '<option value="Semua">Semua Bulan</option>';
+            sorted.forEach(m => {
+                let [y, mo] = m.split('-');
+                let name = `${monthNames[parseInt(mo)-1]} ${y}`;
+                html += `<option value="${m}">${name}</option>`;
+            });
+            sel.innerHTML = html;
+            if(sorted.includes(currentVal)) sel.value = currentVal;
+        }
+
+        function renderUserView() {
+            // Apply Lock UI
+            if(state.isAppLocked) {
+                document.getElementById('locked-warning').classList.remove('hidden');
+                document.querySelectorAll('.txn-input').forEach(el => el.disabled = true);
+            } else {
+                document.getElementById('locked-warning').classList.add('hidden');
+                document.querySelectorAll('.txn-input').forEach(el => el.disabled = false);
+            }
+
+            // Filters
+            const mFilter = document.getElementById('filter-month').value;
+            const tFilter = document.getElementById('filter-type').value;
+            const search = document.getElementById('search-term').value.toLowerCase();
+
+            // 1. Month filter base
+            let baseData = mFilter === 'Semua' ? state.transactions : state.transactions.filter(t => t.date && t.date.startsWith(mFilter));
+
+            // Summary
+            let inc=0, exp=0;
+            baseData.forEach(t => { if(t.type==='Pemasukan') inc+=t.amount; else exp+=t.amount; });
+            document.getElementById('sum-income').innerText = formatIDR(inc);
+            document.getElementById('sum-expense').innerText = formatIDR(exp);
+            document.getElementById('sum-balance').innerText = formatIDR(inc - exp);
+
+            // Chart
+            renderChart(baseData);
+
+            // 2. Table filters & sort
+            let tableData = [...baseData];
+            if(tFilter !== 'Semua') tableData = tableData.filter(t => t.type === tFilter);
+            if(search) tableData = tableData.filter(t => t.description.toLowerCase().includes(search) || t.category.toLowerCase().includes(search));
+            
+            const {key, direction} = state.sortConfig;
+            tableData.sort((a,b) => {
+                let aVal = a[key]; let bVal = b[key];
+                if(typeof aVal==='string') aVal=aVal.toLowerCase();
+                if(typeof bVal==='string') bVal=bVal.toLowerCase();
+                if(aVal < bVal) return direction==='asc'?-1:1;
+                if(aVal > bVal) return direction==='asc'?1:-1;
+                return 0;
+            });
+
+            state.filteredDataCache = tableData; // For PDF
+            
+            // Render Table HTML
+            let html = '';
+            if(tableData.length === 0) {
+                html = `<tr><td colspan="7" class="p-8 text-center text-slate-400">Tidak ada data transaksi.</td></tr>`;
+            } else {
+                tableData.forEach(t => {
+                    const isSelected = state.selectedTxns.includes(t.id);
+                    const typeClass = t.type==='Pemasukan' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700';
+                    html += `
+                    <tr class="border-b border-slate-100 hover:bg-slate-50 ${isSelected?'bg-blue-50':''}">
+                        <td class="p-3 text-center"><input type="checkbox" ${isSelected?'checked':''} onchange="toggleTxnRow(${t.id})" class="txn-input w-4 h-4 rounded" ${state.isAppLocked?'disabled':''}></td>
+                        <td class="p-3 text-slate-700">${t.date}</td>
+                        <td class="p-3"><span class="px-2 py-1 rounded text-xs font-bold ${typeClass}">${t.type}</span></td>
+                        <td class="p-3 text-slate-700 font-medium">${t.category}</td>
+                        <td class="p-3 text-slate-600">${t.description}</td>
+                        <td class="p-3 text-right font-semibold text-slate-800">${formatIDR(t.amount)}</td>
+                        <td class="p-3 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <button onclick="editTxn(${t.id})" class="txn-input p-1.5 text-blue-600 hover:bg-blue-100 rounded disabled:opacity-50" ${state.isAppLocked?'disabled':''}><i data-lucide="edit" class="w-4 h-4"></i></button>
+                                <button onclick="deleteTxn(${t.id})" class="txn-input p-1.5 text-red-600 hover:bg-red-100 rounded disabled:opacity-50" ${state.isAppLocked?'disabled':''}><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            </div>
+                        </td>
+                    </tr>`;
+                });
+            }
+            document.getElementById('txn-tbody').innerHTML = html;
+            document.getElementById('select-all-txn').checked = (tableData.length > 0 && state.selectedTxns.length === tableData.length);
+            
+            const bulkBtn = document.getElementById('bulk-delete-txn-btn');
+            if(state.selectedTxns.length > 0 && !state.isAppLocked) {
+                bulkBtn.classList.remove('hidden');
+                bulkBtn.innerHTML = `<i data-lucide="trash-2" class="w-4 h-4"></i> Hapus ${state.selectedTxns.length} Terpilih`;
+            } else {
+                bulkBtn.classList.add('hidden');
+            }
+            lucide.createIcons();
+        }
+
+        function renderChart(data) {
+            const ctx = document.getElementById('expenseChart').getContext('2d');
+            let cats = {};
+            data.forEach(t => { if(t.type==='Pengeluaran') cats[t.category] = (cats[t.category]||0)+t.amount; });
+            
+            const labels = Object.keys(cats);
+            const values = Object.values(cats);
+
+            if(values.length === 0) {
+                if(chartInstance) { chartInstance.destroy(); chartInstance = null; }
+                document.getElementById('chart-empty').classList.remove('hidden');
+                return;
+            }
+            document.getElementById('chart-empty').classList.add('hidden');
+
+            const colors = ['#10b981', '#f43f5e', '#3b82f6', '#f59e0b', '#8b5cf6', '#06b6d4'];
+
+            if(chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{ data: values, backgroundColor: colors, borderWidth: 1 }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: { callbacks: { label: function(c) { return ' ' + formatIDR(c.raw); } } }
+                    }
+                }
+            });
+        }
+
+        async function handleTxnSubmit(e) {
+            e.preventDefault();
+            if(state.isAppLocked) return;
+
+            const id = document.getElementById('txn-id').value;
+            const payload = {
+                date: document.getElementById('txn-date').value,
+                type: document.getElementById('txn-type').value,
+                category: document.getElementById('txn-category').value,
+                amount: parseFloat(document.getElementById('txn-amount').value),
+                description: document.getElementById('txn-desc').value
+            };
+
+            const isEditing = !!id;
+            if(isEditing) payload.id = Number(id);
+
+            let res = await fetchGAS(isEditing ? 'update' : 'create', 'transactions', payload);
+            if(!res.success && !res.local) {
+                alert("Gagal simpan ke Cloud: " + (res.message || res.error)); return;
+            }
+            
+            if(!isEditing) payload.id = res.id || (state.transactions.length ? Math.max(...state.transactions.map(x=>x.id)) + 1 : 1);
+
+            if(isEditing) {
+                state.transactions = state.transactions.map(t => t.id == payload.id ? payload : t);
+            } else {
+                state.transactions.push(payload);
+            }
+            
+            cancelEditTxn();
+            updateMonthDropdown();
+            renderUserView();
+        }
+
+        function editTxn(id) {
+            if(state.isAppLocked) return;
+            const t = state.transactions.find(x => x.id == id);
+            document.getElementById('txn-id').value = t.id;
+            document.getElementById('txn-date').value = t.date;
+            document.getElementById('txn-type').value = t.type;
+            document.getElementById('txn-category').value = t.category;
+            document.getElementById('txn-amount').value = t.amount;
+            document.getElementById('txn-desc').value = t.description;
+
+            document.getElementById('txn-form-title').innerText = "Edit Jurnal Transaksi";
+            document.getElementById('txn-submit-btn').innerText = "Simpan Perubahan";
+            document.getElementById('txn-cancel-btn').classList.remove('hidden');
+            document.getElementById('txn-form-icon').setAttribute('data-lucide', 'edit');
+            lucide.createIcons();
+            window.scrollTo({top:0, behavior:'smooth'});
+        }
+
+        function cancelEditTxn() {
+            document.getElementById('txn-id').value = '';
+            document.getElementById('txn-date').value = '';
+            document.getElementById('txn-type').value = 'Pemasukan';
+            document.getElementById('txn-category').value = '';
+            document.getElementById('txn-amount').value = '';
+            document.getElementById('txn-desc').value = '';
+
+            document.getElementById('txn-form-title').innerText = "Input Jurnal Transaksi";
+            document.getElementById('txn-submit-btn').innerText = "Rekam Data";
+            document.getElementById('txn-cancel-btn').classList.add('hidden');
+            document.getElementById('txn-form-icon').setAttribute('data-lucide', 'plus');
+            lucide.createIcons();
+        }
+
+        async function deleteTxn(id) {
+            if(state.isAppLocked) return;
+            if(!confirm('Yakin ingin menghapus data ini?')) return;
+
+            let res = await fetchGAS('delete', 'transactions', {id: id});
+            if(!res.success && !res.local) return alert("Gagal dari Cloud.");
+
+            state.transactions = state.transactions.filter(t => t.id != id);
+            state.selectedTxns = state.selectedTxns.filter(x => x != id);
+            updateMonthDropdown();
+            renderUserView();
+        }
+
+        function handleSort(key) {
+            if(state.sortConfig.key === key) {
+                state.sortConfig.direction = state.sortConfig.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                state.sortConfig.key = key;
+                state.sortConfig.direction = 'asc';
+            }
+            renderUserView();
+        }
+
+        function toggleSelectAllTxn(cb) {
+            state.selectedTxns = cb.checked ? state.filteredDataCache.map(x=>x.id) : [];
+            renderUserView();
+        }
+        function toggleTxnRow(id) {
+            if(state.selectedTxns.includes(id)) state.selectedTxns = state.selectedTxns.filter(x=>x!=id);
+            else state.selectedTxns.push(id);
+            renderUserView();
+        }
+
+        async function bulkDeleteTxn() {
+            if(state.isAppLocked || !state.selectedTxns.length) return;
+            if(!confirm(`Hapus ${state.selectedTxns.length} data?`)) return;
+
+            let res = await fetchGAS('bulk_delete', 'transactions', {ids: state.selectedTxns});
+            if(!res.success && !res.local) return alert("Gagal massal dari Cloud.");
+
+            state.transactions = state.transactions.filter(t => !state.selectedTxns.includes(t.id));
+            state.selectedTxns = [];
+            updateMonthDropdown();
+            renderUserView();
+        }
+
+        // PDF Download
+        function downloadPDF() {
+            const printWin = window.open('', '_blank');
+            if(!printWin) return alert("Popup diblokir! Izinkan untuk PDF.");
+            
+            const mf = document.getElementById('filter-month');
+            const periodStr = mf.value === 'Semua' ? 'Semua Bulan' : mf.options[mf.selectedIndex].text;
+            
+            let inc=0, exp=0;
+            state.filteredDataCache.forEach(t => { if(t.type==='Pemasukan') inc+=t.amount; else exp+=t.amount; });
+            
+            let html = `
+            <html>
+            <head>
+                <title>Laporan Arus Kas Bulanan</title>
+                <style>
+                    body { font-family: sans-serif; padding: 20px; color: #333; }
+                    h2 { text-align: center; color: #1e293b; margin-bottom: 5px; }
+                    .summary { display: flex; justify-content: space-between; background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
+                    .summary div { text-align: center; }
+                    .summary strong { display: block; font-size: 18px; margin-top: 5px; }
+                    .income { color: #10b981; } .expense { color: #ef4444; } .balance { color: #3b82f6; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+                    th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; }
+                    th { background-color: #f1f5f9; color: #475569; font-weight: bold; }
+                    .text-right { text-align: right; }
+                    .text-center { text-align: center; }
+                </style>
+            </head>
+            <body>
+                <h2>Laporan Arus Kas (BukuKas Pro)</h2>
+                <p style="text-align:center; color:#64748b; margin-top:0;">Periode: ${periodStr}<br/>Dicetak pada: ${new Date().toLocaleDateString('id-ID')}</p>
+                
+                <div class="summary">
+                    <div>Total Pemasukan <strong class="income">${formatIDR(inc)}</strong></div>
+                    <div>Total Pengeluaran <strong class="expense">${formatIDR(exp)}</strong></div>
+                    <div>Saldo Kas <strong class="balance">${formatIDR(inc-exp)}</strong></div>
+                </div>
+                <table>
+                    <thead>
+                        <tr><th class="text-center">Tanggal</th><th>Tipe</th><th>Kategori</th><th>Uraian</th><th class="text-right">Nominal</th></tr>
+                    </thead>
+                    <tbody>`;
+            
+            state.filteredDataCache.forEach(t => {
+                html += `<tr><td class="text-center">${t.date}</td><td>${t.type}</td><td>${t.category}</td><td>${t.description}</td><td class="text-right">${formatIDR(t.amount)}</td></tr>`;
+            });
+
+            html += `</tbody></table>
+                <script>window.onload=function(){window.print();}<\/script>
+            </body></html>`;
+            
+            printWin.document.write(html);
+            printWin.document.close();
+        }
+    </script>
+</body>
+</html>
