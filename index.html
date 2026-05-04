@@ -51,19 +51,19 @@
                 Sistem Pencatatan Keuangan Harian untuk <span class="text-blue-400">Analis Akuntan Profesional</span>
             </h1>
             <p class="text-xl text-slate-300 mb-12 max-w-2xl">
-                Kelola arus kas, pantau pengeluaran terperinci, dan hasilkan wawasan finansial secara instan. Dirancang untuk presisi dan akurasi tinggi.
+                Kelola arus kas, pantau pengeluaran terperinci, dan hasilkan wawasan finansial secara instan. Dirancang multi-user dengan isolasi privasi data yang kuat.
             </p>
 
             <div class="grid md:grid-cols-3 gap-8 max-w-6xl w-full">
                 <div class="bg-slate-800/50 p-8 rounded-2xl border border-slate-700 hover:border-slate-500 transition-colors">
                     <div class="mb-4 flex justify-center text-blue-400"><i data-lucide="bar-chart-3" class="w-10 h-10"></i></div>
                     <h3 class="text-xl font-bold mb-2">Analisis Rinci</h3>
-                    <p class="text-slate-400">Visualisasi data dalam bentuk grafik donat dan tabel yang dapat difilter secara mendalam.</p>
+                    <p class="text-slate-400">Visualisasi data dalam bentuk grafik garis dan tabel yang dapat difilter secara mendalam.</p>
                 </div>
                 <div class="bg-slate-800/50 p-8 rounded-2xl border border-slate-700 hover:border-slate-500 transition-colors">
                     <div class="mb-4 flex justify-center text-emerald-400"><i data-lucide="shield-check" class="w-10 h-10"></i></div>
-                    <h3 class="text-xl font-bold mb-2">Kontrol Admin</h3>
-                    <p class="text-slate-400">Fitur penguncian aplikasi (Cut-off) dan manajemen pengguna tingkat lanjut.</p>
+                    <h3 class="text-xl font-bold mb-2">Kontrol Privasi</h3>
+                    <p class="text-slate-400">Setiap pengguna memiliki ruang kerja dan database transaksinya sendiri yang terisolasi.</p>
                 </div>
                 <div class="bg-slate-800/50 p-8 rounded-2xl border border-slate-700 hover:border-slate-500 transition-colors">
                     <div class="mb-4 flex justify-center text-purple-400"><i data-lucide="check-square" class="w-10 h-10"></i></div>
@@ -93,7 +93,7 @@
             <form onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Username</label>
-                    <input type="text" id="login-username" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="admin / user" required>
+                    <input type="text" id="login-username" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="admin / user / user2" required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Password</label>
@@ -113,6 +113,15 @@
                 </div>
                 <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-colors">Login</button>
             </form>
+            
+            <div class="mt-6 p-4 bg-blue-50 rounded-lg text-xs text-blue-800">
+                <p class="font-bold mb-1">Demo Multi-User:</p>
+                <ul class="list-disc pl-4 space-y-1">
+                    <li><b>Admin</b> (<code>admin</code> / pass: <code>123</code> / Role: Admin)</li>
+                    <li><b>User 1</b> (<code>user</code> / pass: <code>123</code> / Role: User)</li>
+                    <li><b>User 2</b> (<code>user2</code> / pass: <code>123</code> / Role: User)</li>
+                </ul>
+            </div>
         </div>
     </div>
 
@@ -309,6 +318,20 @@
                         <div><h4 class="font-bold">Aplikasi Terkunci</h4><p>Admin telah mengunci sistem untuk periode ini (Cut-off).</p></div>
                     </div>
 
+                    <!-- Global Filter Bar (Affects Cards & Chart) -->
+                    <div class="flex flex-col sm:flex-row justify-between items-center bg-white p-5 rounded-xl border border-slate-200 shadow-sm gap-4">
+                        <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                            <i data-lucide="pie-chart" class="text-blue-500"></i> Ringkasan Finansial
+                        </h2>
+                        <div class="flex items-center gap-3 w-full sm:w-auto">
+                            <label class="text-sm font-medium text-slate-600 whitespace-nowrap">Filter Bulan:</label>
+                            <select id="filter-month" onchange="renderUserView()" class="w-full sm:w-48 p-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50">
+                                <option value="Semua">Semua Bulan</option>
+                                <!-- Options injected via JS -->
+                            </select>
+                        </div>
+                    </div>
+
                     <!-- Summary Widgets -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
@@ -322,6 +345,17 @@
                         <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
                             <div class="p-4 bg-blue-100 text-blue-600 rounded-full"><i data-lucide="bar-chart-3" class="w-7 h-7"></i></div>
                             <div><p class="text-sm font-medium text-slate-500">Saldo Kas</p><h3 id="sum-balance" class="text-2xl font-bold text-slate-800">Rp0</h3></div>
+                        </div>
+                    </div>
+
+                    <!-- Line Chart (1 Year Trend) -->
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+                        <div class="flex justify-between items-center mb-4 border-b pb-2">
+                            <h3 class="text-lg font-bold text-slate-800">Tren Arus Kas Bulanan (Tahun <span id="chart-title-year"></span>)</h3>
+                        </div>
+                        <div class="w-full h-[350px] relative">
+                            <canvas id="cashflowChart"></canvas>
+                            <div id="chart-empty" class="hidden absolute inset-0 flex items-center justify-center text-slate-400">Belum ada data untuk tahun ini.</div>
                         </div>
                     </div>
 
@@ -362,15 +396,6 @@
                         </form>
                     </div>
 
-                    <!-- Chart -->
-                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col">
-                        <h3 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Distribusi Pengeluaran</h3>
-                        <div class="w-full h-[350px] relative">
-                            <canvas id="expenseChart"></canvas>
-                            <div id="chart-empty" class="hidden absolute inset-0 flex items-center justify-center text-slate-400">Belum ada data pengeluaran.</div>
-                        </div>
-                    </div>
-
                     <!-- Table Data -->
                     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                         <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-50">
@@ -382,10 +407,6 @@
                             </div>
                             
                             <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                                <select id="filter-month" onchange="renderUserView()" class="p-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                                    <option value="Semua">Semua Bulan</option>
-                                    <!-- Options injected via JS -->
-                                </select>
                                 <select id="filter-type" onchange="renderUserView()" class="p-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                                     <option value="Semua">Semua Arus Kas</option>
                                     <option value="Pemasukan">Hanya Pemasukan</option>
@@ -430,14 +451,19 @@
     <script>
         // --- DATA & STATE ---
         let initialTransactions = [
-            { id: 1, date: '2026-05-01', type: 'Pemasukan', category: 'Pendapatan Jasa', amount: 15000000, description: 'Audit PT. ABC' },
-            { id: 2, date: '2026-05-02', type: 'Pengeluaran', category: 'Operasional', amount: 2500000, description: 'Lisensi Software Akuntansi' },
-            { id: 3, date: '2026-05-03', type: 'Pengeluaran', category: 'Transportasi', amount: 500000, description: 'Kunjungan Klien' },
-            { id: 4, date: '2026-05-04', type: 'Pemasukan', category: 'Konsultasi', amount: 5000000, description: 'Konsultasi Pajak Bpk. Budi' },
+            // Transaksi User 1
+            { id: 1, username: 'user', date: '2026-05-01', type: 'Pemasukan', category: 'Pendapatan Jasa', amount: 15000000, description: 'Audit PT. ABC' },
+            { id: 2, username: 'user', date: '2026-05-02', type: 'Pengeluaran', category: 'Operasional', amount: 2500000, description: 'Lisensi Software Akuntansi' },
+            { id: 3, username: 'user', date: '2026-08-15', type: 'Pemasukan', category: 'Konsultasi', amount: 7500000, description: 'Proyek Bulan Agustus' },
+            // Transaksi User 2
+            { id: 4, username: 'user2', date: '2026-05-03', type: 'Pengeluaran', category: 'Transportasi', amount: 500000, description: 'Kunjungan Klien' },
+            { id: 5, username: 'user2', date: '2026-05-04', type: 'Pemasukan', category: 'Konsultasi', amount: 5000000, description: 'Konsultasi Pajak Bpk. Budi' },
         ];
+        
         let initialUsers = [
             { id: 1, username: 'admin', password: '123', role: 'admin', name: 'Admin Utama' },
             { id: 2, username: 'user', password: '123', role: 'user', name: 'Staf Akuntan 1' },
+            { id: 3, username: 'user2', password: '123', role: 'user', name: 'Staf Akuntan 2' },
         ];
 
         let state = {
@@ -868,7 +894,11 @@
             const sel = document.getElementById('filter-month');
             const currentVal = sel.value;
             let months = new Set();
-            state.transactions.forEach(t => { if(t.date) months.add(t.date.substring(0,7)); });
+            
+            // HANYA AMBIL BULAN DARI TRANSAKSI USER YANG SEDANG LOGIN
+            let userTxns = state.transactions.filter(t => t.username === state.currentUser.username);
+            
+            userTxns.forEach(t => { if(t.date) months.add(t.date.substring(0,7)); });
             let sorted = Array.from(months).sort().reverse();
             
             const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
@@ -893,23 +923,37 @@
                 document.querySelectorAll('.txn-input').forEach(el => el.disabled = false);
             }
 
+            // MENGISOLASI DATA (PRIVASI MULTI-USER): 
+            // Hanya ambil data transaksi yang username-nya cocok dengan username yang sedang login
+            let userTxns = state.transactions.filter(t => t.username === state.currentUser.username);
+
             // Filters
             const mFilter = document.getElementById('filter-month').value;
             const tFilter = document.getElementById('filter-type').value;
             const search = document.getElementById('search-term').value.toLowerCase();
 
-            // 1. Month filter base
-            let baseData = mFilter === 'Semua' ? state.transactions : state.transactions.filter(t => t.date && t.date.startsWith(mFilter));
+            // 1. Month filter base for Summary & Table
+            let baseData = mFilter === 'Semua' ? userTxns : userTxns.filter(t => t.date && t.date.startsWith(mFilter));
 
-            // Summary
+            // Summary Calculation
             let inc=0, exp=0;
             baseData.forEach(t => { if(t.type==='Pemasukan') inc+=t.amount; else exp+=t.amount; });
             document.getElementById('sum-income').innerText = formatIDR(inc);
             document.getElementById('sum-expense').innerText = formatIDR(exp);
             document.getElementById('sum-balance').innerText = formatIDR(inc - exp);
 
-            // Chart
-            renderChart(baseData);
+            // Tentukan Tahun Target untuk Line Chart (Tampilkan Data 1 Tahun Penuh)
+            let targetYear = new Date().getFullYear().toString();
+            if (mFilter !== 'Semua') {
+                targetYear = mFilter.substring(0, 4); // Ambil tahun dari filter spesifik
+            } else if (userTxns.length > 0) {
+                // Cari tahun paling terbaru dari transaksi milik user ini
+                let maxDate = userTxns.reduce((max, t) => t.date > max ? t.date : max, '0000-00');
+                if (maxDate !== '0000-00') targetYear = maxDate.substring(0, 4);
+            }
+
+            // Line Chart Render
+            renderLineChart(userTxns, targetYear);
 
             // 2. Table filters & sort
             let tableData = [...baseData];
@@ -966,35 +1010,96 @@
             lucide.createIcons();
         }
 
-        function renderChart(data) {
-            const ctx = document.getElementById('expenseChart').getContext('2d');
-            let cats = {};
-            data.forEach(t => { if(t.type==='Pengeluaran') cats[t.category] = (cats[t.category]||0)+t.amount; });
-            
-            const labels = Object.keys(cats);
-            const values = Object.values(cats);
+        // Fungsi Render Line Chart
+        function renderLineChart(userData, targetYear) {
+            const ctx = document.getElementById('cashflowChart').getContext('2d');
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'];
 
-            if(values.length === 0) {
-                if(chartInstance) { chartInstance.destroy(); chartInstance = null; }
+            let incData = new Array(12).fill(0);
+            let expData = new Array(12).fill(0);
+            let hasData = false;
+
+            // Agregasi Data per Bulan untuk tahun yang dipilih HANYA dari data user ini
+            userData.forEach(t => {
+                if (t.date && t.date.startsWith(targetYear)) {
+                    let monthIndex = parseInt(t.date.split('-')[1]) - 1; // 0 (Jan) sampai 11 (Des)
+                    if (t.type === 'Pemasukan') {
+                        incData[monthIndex] += t.amount;
+                    } else {
+                        expData[monthIndex] += t.amount;
+                    }
+                    hasData = true;
+                }
+            });
+
+            document.getElementById('chart-title-year').innerText = targetYear;
+
+            if (!hasData) {
+                if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
                 document.getElementById('chart-empty').classList.remove('hidden');
                 return;
             }
             document.getElementById('chart-empty').classList.add('hidden');
 
-            const colors = ['#10b981', '#f43f5e', '#3b82f6', '#f59e0b', '#8b5cf6', '#06b6d4'];
-
-            if(chartInstance) chartInstance.destroy();
+            if (chartInstance) chartInstance.destroy();
             chartInstance = new Chart(ctx, {
-                type: 'doughnut',
+                type: 'line',
                 data: {
-                    labels: labels,
-                    datasets: [{ data: values, backgroundColor: colors, borderWidth: 1 }]
+                    labels: monthNames,
+                    datasets: [
+                        {
+                            label: 'Pemasukan',
+                            data: incData,
+                            borderColor: '#10b981', // Emerald
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.3, // Membuat garis sedikit melengkung (smooth)
+                            fill: true,
+                            borderWidth: 2,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: '#10b981'
+                        },
+                        {
+                            label: 'Pengeluaran',
+                            data: expData,
+                            borderColor: '#ef4444', // Red
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            tension: 0.3,
+                            fill: true,
+                            borderWidth: 2,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: '#ef4444'
+                        }
+                    ]
                 },
                 options: {
-                    responsive: true, maintainAspectRatio: false,
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
                     plugins: {
-                        legend: { position: 'bottom' },
-                        tooltip: { callbacks: { label: function(c) { return ' ' + formatIDR(c.raw); } } }
+                        legend: { position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + formatIDR(context.raw);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    if(value === 0) return 'Rp0';
+                                    return 'Rp' + (value / 1000000) + ' Jt'; // Singkat Juta untuk Y-Axis
+                                }
+                            }
+                        }
                     }
                 }
             });
@@ -1006,6 +1111,7 @@
 
             const id = document.getElementById('txn-id').value;
             const payload = {
+                username: state.currentUser.username, // OTOMATIS TAUTKAN TRANSAKSI KE USERNAME YANG LOGIN
                 date: document.getElementById('txn-date').value,
                 type: document.getElementById('txn-type').value,
                 category: document.getElementById('txn-category').value,
@@ -1144,7 +1250,11 @@
             </head>
             <body>
                 <h2>Laporan Arus Kas (BukuKas Pro)</h2>
-                <p style="text-align:center; color:#64748b; margin-top:0;">Periode: ${periodStr}<br/>Dicetak pada: ${new Date().toLocaleDateString('id-ID')}</p>
+                <p style="text-align:center; color:#64748b; margin-top:0;">
+                    Dicetak oleh: <b>${state.currentUser.name}</b><br/>
+                    Periode: ${periodStr}<br/>
+                    Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}
+                </p>
                 
                 <div class="summary">
                     <div>Total Pemasukan <strong class="income">${formatIDR(inc)}</strong></div>
