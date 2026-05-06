@@ -556,9 +556,7 @@
         ];
         
         let initialUsers = [
-            { id: 1, username: 'supriyadi', password: '291188', role: 'admin', name: 'Supriyadi', isFullFeature: true },
-            { id: 2, username: 'user', password: '123', role: 'user', name: 'Staf Akuntan 1', isFullFeature: false },
-            { id: 3, username: 'user2', password: '123', role: 'user', name: 'Staf Akuntan 2', isFullFeature: true }
+            { id: 1, username: 'supriyadi', password: '291188', role: 'admin', name: 'Supriyadi', isFullFeature: true }
         ];
 
         let state = {
@@ -583,6 +581,29 @@
         let chartInstance = null;
         const formatIDR = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
 
+        // --- UTILS: TANGGAL ---
+        // Parse ISO String ke YYYY-MM-DD lokal
+        function parseGasDate(dateStr) {
+            if (!dateStr) return '';
+            if (dateStr.includes('T')) {
+                const d = new Date(dateStr);
+                const yyyy = d.getFullYear();
+                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                const dd = String(d.getDate()).padStart(2, '0');
+                return `${yyyy}-${mm}-${dd}`;
+            }
+            return dateStr;
+        }
+
+        // Format YYYY-MM-DD ke DD MMMM YYYY (Contoh: 3 Mei 2026)
+        function formatDateIndo(dateStr) {
+            if (!dateStr) return '';
+            const parts = dateStr.split('-');
+            if (parts.length !== 3) return dateStr;
+            const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            return `${parseInt(parts[2])} ${monthNames[parseInt(parts[1])-1]} ${parts[0]}`;
+        }
+
         // --- INIT ---
         document.addEventListener('DOMContentLoaded', async () => {
             lucide.createIcons();
@@ -595,8 +616,17 @@
                         fetchGAS('read', 'transactions', null, true)
                     ]);
                     
-                    if(resUsers && Array.isArray(resUsers) && !resUsers.error) state.users = resUsers.map(u => ({...u, id: Number(u.id)}));
-                    if(resTxn && Array.isArray(resTxn) && !resTxn.error) state.transactions = resTxn.map(d => ({...d, amount: Number(d.amount), id: Number(d.id)}));
+                    if(resUsers && Array.isArray(resUsers) && !resUsers.error) {
+                        state.users = resUsers.map(u => ({...u, id: Number(u.id)}));
+                    }
+                    if(resTxn && Array.isArray(resTxn) && !resTxn.error) {
+                        state.transactions = resTxn.map(d => ({
+                            ...d, 
+                            amount: Number(d.amount), 
+                            id: Number(d.id),
+                            date: parseGasDate(d.date) // <-- FIX TANGGAL ZONA WAKTU
+                        }));
+                    }
                     
                     if((resUsers && resUsers.error) || (resTxn && resTxn.error)) throw new Error("Terjadi kesalahan fetch");
                     setConnectionStatus('connected');
@@ -821,8 +851,17 @@
                     fetchGAS('read', 'transactions', null, true)
                 ]);
 
-                if(resUsers && Array.isArray(resUsers) && !resUsers.error) state.users = resUsers.map(u => ({...u, id: Number(u.id)}));
-                if(resTxn && Array.isArray(resTxn) && !resTxn.error) state.transactions = resTxn.map(d => ({...d, amount: Number(d.amount), id: Number(d.id)}));
+                if(resUsers && Array.isArray(resUsers) && !resUsers.error) {
+                    state.users = resUsers.map(u => ({...u, id: Number(u.id)}));
+                }
+                if(resTxn && Array.isArray(resTxn) && !resTxn.error) {
+                    state.transactions = resTxn.map(d => ({
+                        ...d, 
+                        amount: Number(d.amount), 
+                        id: Number(d.id),
+                        date: parseGasDate(d.date) // <-- FIX TANGGAL ZONA WAKTU
+                    }));
+                }
 
                 // Render ulang secara senyap tanpa mereset filter yang dipilih pengguna
                 if (state.view === 'dashboard') {
@@ -1237,11 +1276,12 @@
                     html += `
                     <tr class="border-b border-slate-100 hover:bg-slate-50 ${isSelected?'bg-blue-50':''}">
                         <td class="p-3 text-center"><input type="checkbox" ${isSelected?'checked':''} onchange="toggleTxnRow(${t.id})" class="txn-input w-4 h-4 rounded" ${state.isAppLocked?'disabled':''}></td>
-                        <td class="p-3 text-slate-700">${t.date}</td>
+                        <!-- UPDATE FORMAT TANGGAL DI TABEL -->
+                        <td class="p-3 text-slate-700 whitespace-nowrap">${formatDateIndo(t.date)}</td>
                         <td class="p-3"><span class="px-2 py-1 rounded text-xs font-bold ${typeClass}">${t.type}</span></td>
                         <td class="p-3 text-slate-700 font-medium">${t.category}</td>
                         <td class="p-3 text-slate-600">${t.description}</td>
-                        <td class="p-3 text-right font-semibold text-slate-800">${formatIDR(t.amount)}</td>
+                        <td class="p-3 text-right font-semibold text-slate-800 whitespace-nowrap">${formatIDR(t.amount)}</td>
                         <td class="p-3 text-center">
                             <div class="flex items-center justify-center gap-2">
                                 <button onclick="editTxn(${t.id})" class="txn-input p-1.5 text-blue-600 hover:bg-blue-100 rounded disabled:opacity-50" ${state.isAppLocked?'disabled':''}><i data-lucide="edit" class="w-4 h-4"></i></button>
@@ -1556,7 +1596,8 @@
                     <tbody>`;
             
             state.filteredDataCache.forEach(t => {
-                html += `<tr><td class="text-center">${t.date}</td><td>${t.type}</td><td>${t.category}</td><td>${t.description}</td><td class="text-right">${formatIDR(t.amount)}</td></tr>`;
+                // UPDATE JUGA DI PDF UNTUK MENGGUNAKAN TANGGAL INDONESIA
+                html += `<tr><td class="text-center">${formatDateIndo(t.date)}</td><td>${t.type}</td><td>${t.category}</td><td>${t.description}</td><td class="text-right">${formatIDR(t.amount)}</td></tr>`;
             });
 
             html += `</tbody></table>
