@@ -490,10 +490,24 @@
                                 <!-- Filter Tanggal -->
                                 <input type="date" id="filter-date" onchange="renderUserView()" class="p-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" title="Pilih Tanggal Spesifik">
                                 
-                                <!-- Filter Kategori Dinamis -->
-                                <select id="filter-category" onchange="renderUserView()" class="p-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                                    <option value="Semua">Semua Kategori</option>
-                                </select>
+                                <!-- Filter Kategori Dinamis (Checklist Multi-Select) -->
+                                <div class="relative w-full sm:w-48">
+                                    <button type="button" id="filter-category-btn" onclick="toggleCategoryDropdown()" class="w-full p-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white text-left flex justify-between items-center">
+                                        <span id="filter-category-text" class="truncate">Semua Kategori</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                                    </button>
+                                    <div id="filter-category-dropdown" class="hidden absolute top-full left-0 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-60 flex flex-col overflow-hidden">
+                                        <div class="p-2 bg-slate-50 border-b border-slate-200">
+                                            <label class="flex items-center gap-2 text-sm cursor-pointer font-bold text-slate-700">
+                                                <input type="checkbox" id="cat-select-all" onchange="toggleAllCategories(this)" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                                                Semua Kategori
+                                            </label>
+                                        </div>
+                                        <div id="category-checkbox-list" class="p-2 overflow-y-auto space-y-1">
+                                            <!-- Checkboxes injected via JS -->
+                                        </div>
+                                    </div>
+                                </div>
 
                                 <select id="filter-type" onchange="renderUserView()" class="p-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                                     <option value="Semua">Semua Arus Kas</option>
@@ -575,6 +589,7 @@
             // User Table State
             sortConfig: { key: 'date', direction: 'desc' },
             selectedTxns: [],
+            selectedCategories: [], // state untuk filter kategori ceklist
             filteredDataCache: [] // for PDF printing
         };
 
@@ -607,6 +622,18 @@
         // --- INIT ---
         document.addEventListener('DOMContentLoaded', async () => {
             lucide.createIcons();
+
+            // Listener untuk menutup dropdown kategori ketika klik di luar area
+            document.addEventListener('click', (e) => {
+                const dropdown = document.getElementById('filter-category-dropdown');
+                const btn = document.getElementById('filter-category-btn');
+                if (dropdown && !dropdown.classList.contains('hidden')) {
+                    if (!dropdown.contains(e.target) && !btn.contains(e.target)) {
+                        dropdown.classList.add('hidden');
+                    }
+                }
+            });
+
             // Fetch awal saat aplikasi pertama dibuka
             if(state.gasUrl) {
                 setConnectionStatus('checking');
@@ -1189,6 +1216,29 @@
             if(sorted.includes(currentVal)) sel.value = currentVal;
         }
 
+        // Logic Filter Kategori Checklist
+        function toggleCategoryDropdown() {
+            document.getElementById('filter-category-dropdown').classList.toggle('hidden');
+        }
+
+        function handleCategoryChange() {
+            const checkboxes = document.querySelectorAll('.cat-checkbox');
+            state.selectedCategories = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+            document.getElementById('cat-select-all').checked = state.selectedCategories.length === 0;
+            renderUserView();
+        }
+
+        function toggleAllCategories(source) {
+            if (source.checked) {
+                state.selectedCategories = [];
+                document.querySelectorAll('.cat-checkbox').forEach(cb => cb.checked = false);
+                renderUserView();
+            } else {
+                // Jangan biarkan 'Semua' ter-uncheck tanpa ada pilihan lain
+                if (state.selectedCategories.length === 0) source.checked = true;
+            }
+        }
+
         function renderUserView() {
             // Apply Lock UI
             if(state.isAppLocked) {
@@ -1209,19 +1259,37 @@
             // 1. Month filter base for Summary & Table
             let baseData = mFilter === 'Semua' ? userTxns : userTxns.filter(t => t.date && t.date.startsWith(mFilter));
 
-            // Perbarui Pilihan Dropdown Kategori Berdasarkan Data Bulan Terpilih
-            const catSel = document.getElementById('filter-category');
-            const currentCat = catSel.value;
+            // Perbarui Checklist Kategori Berdasarkan Data Bulan Terpilih
             let cats = new Set();
             baseData.forEach(t => { if(t.category) cats.add(t.category); });
-            let catHtml = '<option value="Semua">Semua Kategori</option>';
-            Array.from(cats).sort().forEach(c => { catHtml += `<option value="${c}">${c}</option>`; });
-            catSel.innerHTML = catHtml;
-            if(Array.from(cats).includes(currentCat)) catSel.value = currentCat;
-            else catSel.value = 'Semua';
+            let catArray = Array.from(cats).sort();
+
+            // Bersihkan pilihan yang tidak ada di bulan ini
+            state.selectedCategories = state.selectedCategories.filter(c => catArray.includes(c));
+
+            const listContainer = document.getElementById('category-checkbox-list');
+            let catHtml = '';
+            catArray.forEach(c => {
+                const isChecked = state.selectedCategories.includes(c) ? 'checked' : '';
+                catHtml += `
+                    <label class="flex items-center gap-2 text-sm cursor-pointer text-slate-600 hover:bg-slate-50 p-1.5 rounded">
+                        <input type="checkbox" value="${c}" onchange="handleCategoryChange()" class="cat-checkbox rounded border-slate-300 text-blue-600 focus:ring-blue-500" ${isChecked}>
+                        <span class="truncate">${c}</span>
+                    </label>
+                `;
+            });
+            listContainer.innerHTML = catHtml;
+
+            document.getElementById('cat-select-all').checked = state.selectedCategories.length === 0;
+            
+            const btnText = document.getElementById('filter-category-text');
+            if (state.selectedCategories.length === 0) {
+                btnText.innerText = 'Semua Kategori';
+            } else {
+                btnText.innerText = `${state.selectedCategories.length} Kategori Dipilih`;
+            }
 
             // Ambil Seluruh Value Filter
-            const cFilter = catSel.value;
             const dFilter = document.getElementById('filter-date').value;
             const tFilter = document.getElementById('filter-type').value;
             const search = document.getElementById('search-term').value.toLowerCase();
@@ -1249,7 +1317,7 @@
             // 2. Table filters & sort
             let tableData = [...baseData];
             if(tFilter !== 'Semua') tableData = tableData.filter(t => t.type === tFilter);
-            if(cFilter !== 'Semua') tableData = tableData.filter(t => t.category === cFilter);
+            if(state.selectedCategories.length > 0) tableData = tableData.filter(t => state.selectedCategories.includes(t.category));
             if(dFilter) tableData = tableData.filter(t => t.date === dFilter);
             if(search) tableData = tableData.filter(t => t.description.toLowerCase().includes(search) || t.category.toLowerCase().includes(search));
             
