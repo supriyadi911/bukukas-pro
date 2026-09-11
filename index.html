@@ -26,6 +26,19 @@
 <body class="bg-slate-50 font-sans text-slate-800 min-h-screen flex flex-col">
 
     <!-- ==========================================
+         OVERLAY LOADING SIMPAN
+    =========================================== -->
+    <div id="save-loader-overlay" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 flex flex-col items-center gap-4 transform transition-all text-center">
+            <i data-lucide="loader-2" class="w-12 h-12 text-blue-600 animate-spin"></i>
+            <div>
+                <h3 class="text-xl font-bold text-slate-800">Menyimpan Data...</h3>
+                <p class="text-slate-500 text-sm mt-1">Sistem sedang merekam transaksi Anda.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
          POPUP UPGRADE FULL FITUR
     =========================================== -->
     <div id="upgrade-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm">
@@ -398,19 +411,10 @@
                         <div><h4 class="font-bold">Aplikasi Terkunci</h4><p>Admin telah mengunci sistem untuk periode ini (Cut-off).</p></div>
                     </div>
 
-                    <!-- Global Filter Bar (Affects Cards & Chart) -->
-                    <div class="flex flex-col sm:flex-row justify-between items-center bg-white p-5 rounded-xl border border-slate-200 shadow-sm gap-4">
-                        <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                            <i data-lucide="pie-chart" class="text-blue-500"></i> Ringkasan Finansial
-                        </h2>
-                        <div class="flex items-center gap-3 w-full sm:w-auto">
-                            <label class="text-sm font-medium text-slate-600 whitespace-nowrap">Filter Bulan:</label>
-                            <select id="filter-month" onchange="renderUserView()" class="w-full sm:w-48 p-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50">
-                                <option value="Semua">Semua Bulan</option>
-                                <!-- Options injected via JS -->
-                            </select>
-                        </div>
-                    </div>
+                    <!-- Ringkasan Finansial Header -->
+                    <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2 mb-2">
+                        <i data-lucide="pie-chart" class="text-blue-500"></i> Ringkasan Finansial
+                    </h2>
 
                     <!-- Summary Widgets -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -478,49 +482,66 @@
 
                     <!-- Table Data -->
                     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                        <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-50">
-                            <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
+                        <div class="p-4 border-b border-slate-200 flex flex-col lg:flex-row justify-between items-start gap-4 bg-slate-50">
+                            <div class="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-start mt-1">
                                 <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">Buku Besar Kas</h3>
                                 <button onclick="downloadPDF()" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors" title="Cetak/Unduh sebagai PDF">
                                     <i data-lucide="download" class="w-4 h-4"></i> <span class="hidden sm:inline">Unduh Laporan</span>
                                 </button>
                             </div>
                             
-                            <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                                <!-- Filter Tanggal -->
-                                <input type="date" id="filter-date" onchange="renderUserView()" class="p-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" title="Pilih Tanggal Spesifik">
-                                
-                                <!-- Filter Kategori Dinamis (Checklist Multi-Select) -->
-                                <div class="relative w-full sm:w-48">
-                                    <button type="button" id="filter-category-btn" onclick="toggleCategoryDropdown()" class="w-full p-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white text-left flex justify-between items-center">
-                                        <span id="filter-category-text" class="truncate">Semua Kategori</span>
-                                        <i data-lucide="chevron-down" class="w-4 h-4"></i>
-                                    </button>
-                                    <div id="filter-category-dropdown" class="hidden absolute top-full left-0 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-60 flex flex-col overflow-hidden">
-                                        <div class="p-2 bg-slate-50 border-b border-slate-200">
-                                            <label class="flex items-center gap-2 text-sm cursor-pointer font-bold text-slate-700">
-                                                <input type="checkbox" id="cat-select-all" onchange="toggleAllCategories(this)" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
-                                                Semua Kategori
-                                            </label>
-                                        </div>
-                                        <div id="category-checkbox-list" class="p-2 overflow-y-auto space-y-1">
-                                            <!-- Checkboxes injected via JS -->
+                            <div class="flex flex-col gap-2 w-full lg:w-auto">
+                                <!-- Baris Atas: Tanggal, Kategori, Arus Kas -->
+                                <div class="flex flex-wrap items-center gap-2 w-full lg:justify-end">
+                                    <!-- Filter Tanggal -->
+                                    <input type="date" id="filter-date" onchange="renderUserView()" class="w-full sm:w-auto p-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" title="Pilih Tanggal Spesifik">
+                                    
+                                    <!-- Filter Kategori Dinamis (Checklist Multi-Select) -->
+                                    <div class="relative w-full sm:w-48">
+                                        <button type="button" id="filter-category-btn" onclick="toggleCategoryDropdown()" class="w-full p-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white text-left flex justify-between items-center">
+                                            <span id="filter-category-text" class="truncate">Semua Kategori</span>
+                                            <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                                        </button>
+                                        <div id="filter-category-dropdown" class="hidden absolute top-full left-0 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-60 flex flex-col overflow-hidden">
+                                            <div class="p-2 bg-slate-50 border-b border-slate-200">
+                                                <label class="flex items-center gap-2 text-sm cursor-pointer font-bold text-slate-700">
+                                                    <input type="checkbox" id="cat-select-all" onchange="toggleAllCategories(this)" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                                                    Semua Kategori
+                                                </label>
+                                            </div>
+                                            <div id="category-checkbox-list" class="p-2 overflow-y-auto space-y-1">
+                                                <!-- Checkboxes injected via JS -->
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <select id="filter-type" onchange="renderUserView()" class="p-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                                    <option value="Semua">Semua Arus Kas</option>
-                                    <option value="Pemasukan">Hanya Pemasukan</option>
-                                    <option value="Pengeluaran">Hanya Pengeluaran</option>
-                                </select>
-                                <div class="relative">
-                                    <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4"></i>
-                                    <input type="text" id="search-term" oninput="renderUserView()" placeholder="Cari uraian..." class="pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none w-full sm:w-40">
+                                    <!-- Filter Arus Kas -->
+                                    <select id="filter-type" onchange="renderUserView()" class="w-full sm:w-auto p-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                                        <option value="Semua">Semua Arus Kas</option>
+                                        <option value="Pemasukan">Hanya Pemasukan</option>
+                                        <option value="Pengeluaran">Hanya Pengeluaran</option>
+                                    </select>
                                 </div>
-                                <button id="bulk-delete-txn-btn" onclick="bulkDeleteTxn()" class="hidden flex items-center gap-2 bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i> Hapus Terpilih
-                                </button>
+                                
+                                <!-- Baris Bawah: Filter Bulan, Pencarian, Tombol Hapus -->
+                                <div class="flex flex-wrap items-center gap-2 w-full lg:justify-end">
+                                    <!-- Filter Bulan (Dipindahkan ke sini) -->
+                                    <select id="filter-month" onchange="renderUserView()" class="w-full sm:w-48 p-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                                        <option value="Semua">Semua Bulan</option>
+                                        <!-- Options injected via JS -->
+                                    </select>
+
+                                    <!-- Pencarian -->
+                                    <div class="relative w-full sm:w-auto flex-1 sm:flex-none">
+                                        <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4"></i>
+                                        <input type="text" id="search-term" oninput="renderUserView()" placeholder="Cari uraian..." class="pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none w-full sm:w-56">
+                                    </div>
+
+                                    <!-- Tombol Bulk Delete -->
+                                    <button id="bulk-delete-txn-btn" onclick="bulkDeleteTxn()" class="hidden flex items-center gap-2 bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors w-full sm:w-auto justify-center">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i> Hapus Terpilih
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -579,7 +600,7 @@
             transactions: [...initialTransactions],
             users: [...initialUsers],
             isAppLocked: false,
-            gasUrl: localStorage.getItem('buku_kas_gas_url') || 'https://script.google.com/macros/s/AKfycbyPG2aUHIPp629Uclv5vdCc7oe2fg_hb7nTXYwYjtFzo90gfvgigYq2-W5hJcWcPSdH8Q/exec',
+            gasUrl: localStorage.getItem('buku_kas_gas_url') || 'https://script.google.com/macros/s/AKfycbxtUmRWdY5V4TKRhyY4cLrH7clYQJ8Wf7oUj4l1J0zuXcvTrcQB3d27qC849nOg7KE8hw/exec',
             isLoading: false,
             connStatus: 'offline', // checking, connected, error, offline
             autoRefresh: false,
@@ -1518,7 +1539,17 @@
 
             if(isEditing) payload.id = Number(id);
 
-            let res = await fetchGAS(isEditing ? 'update' : 'create', 'transactions', payload);
+            // Tampilkan Overlay Loading Simpan
+            const overlay = document.getElementById('save-loader-overlay');
+            overlay.classList.remove('hidden');
+            lucide.createIcons();
+
+            // Sembunyikan global loader bawaan dengan menambah parameter `true` (silent) di akhir fetchGAS
+            let res = await fetchGAS(isEditing ? 'update' : 'create', 'transactions', payload, true);
+            
+            // Sembunyikan Overlay Loading setelah proses selesai
+            overlay.classList.add('hidden');
+
             if(!res.success && !res.local) {
                 alert("Gagal simpan ke Cloud: " + (res.message || res.error)); return;
             }
